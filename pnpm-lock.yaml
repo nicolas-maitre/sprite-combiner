@@ -4,12 +4,14 @@ specifiers:
   '@types/node': ^18.7.8
   arg: ^5.0.2
   image-size: ^1.0.2
+  potpack: ^1.0.2
   pureimage: ^0.3.14
   typescript: ^4.7.4
 
 dependencies:
   arg: 5.0.2
   image-size: 1.0.2
+  potpack: 1.0.2
   pureimage: 0.3.14
 
 devDependencies:
@@ -50,6 +52,10 @@ packages:
   /pngjs/3.4.0:
     resolution: {integrity: sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==}
     engines: {node: '>=4.0.0'}
+    dev: false
+
+  /potpack/1.0.2:
+    resolution: {integrity: sha512-choctRBIV9EMT9WGAZHn3V7t0Z2pMQyl0EZE6pFc/6ml3ssw7Dlf/oAOvFwjm1HVsqfQN8GfeFyJ+d8tRzqueQ==}
     dev: false
 
   /pureimage/0.3.14:

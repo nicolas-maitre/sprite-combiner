@@ -5,7 +5,6 @@ import {
   readFileSync,
   writeFileSync,
 } from "fs";
-import { readFile, writeFile } from "fs/promises";
 import sizeOf from "image-size";
 import path from "path";
 import {
@@ -14,6 +13,8 @@ import {
   make as makeImage,
 } from "pureimage";
 import { Readable } from "stream";
+import potpack from "potpack";
+
 (async () => {
   const args = arg({ "--out": String });
 
@@ -27,42 +28,33 @@ import { Readable } from "stream";
     [letter: string]: FileTree | PosDim;
   }
 
-  let fullWidth = 0;
-  let maxHeight = 0;
-
   console.log(`reading ${fileNames.length} sprites...`);
-
   const filesData = fileNames.map((name) => {
     const buffer = readFileSync(path.join(spritesDir, name));
 
-    const { height, width } = sizeOf(buffer);
-
-    fullWidth += width ?? 0;
-    if (height && height > maxHeight) {
-      maxHeight = height;
+    const { height: h, width: w } = sizeOf(buffer);
+    if (h === undefined || w === undefined) {
+      throw new Error("undefined size for " + name);
     }
 
-    return { name, buffer, size: [0, 0, width, height] as PosDim };
+    return { name, buffer, w, h, x: 0, y: 0 };
   });
 
-  const fullImage = makeImage(fullWidth, maxHeight, undefined);
-  const fullImageCtx = fullImage.getContext("2d");
+  const { w: fullWidth, h: fullHeight } = potpack(filesData);
 
   console.log("drawing sprites...");
+  const fullImage = makeImage(fullWidth, fullHeight, undefined);
+  const fullImageCtx = fullImage.getContext("2d");
 
   const _doneTresholds = [...new Array(10)].map((_, i) =>
     Math.floor((filesData.length / 10) * i)
   );
   let _tresholdIndex = 1;
 
-  let currentX = 0;
   for (let index = 0; index < filesData.length; index++) {
-    const { buffer, name, size } = filesData[index];
-    size[0] = currentX;
-    const [x, y, width, height] = size;
-    currentX += width;
+    const { buffer, x, y, w, h } = filesData[index];
     const img = await decodePNGFromStream(Readable.from(buffer));
-    fullImageCtx.drawImage(img, x, y, width, height);
+    fullImageCtx.drawImage(img, x, y, w, h);
 
     if (index === _doneTresholds[_tresholdIndex]) {
       console.log(`${_tresholdIndex * 10}%`);
@@ -72,14 +64,17 @@ import { Readable } from "stream";
 
   const fileTree: FileTree = {};
 
-  filesData.forEach(({ name, size }) => {
-    insertToTree(fileTree, name.substring(0, name.length - 4), size);
+  filesData.forEach(({ name, x, y, w, h }) => {
+    insertToTree(fileTree, name.substring(0, name.length - 4), [x, y, w, h]);
   });
 
   function insertToTree(tree: FileTree, fileName: string, data: PosDim) {
     const letter = fileName[0];
     const nextFileName = fileName.substring(1);
     if (nextFileName.length === 0) {
+      if (tree[letter]) {
+        throw new Error(`Two sprites have overlapping names`);
+      }
       tree[letter] = data;
       return;
     }

@@ -1,1 +1,1 @@
-{"devDependencies":{"@types/node":"^18.7.8","typescript":"^4.7.4"},"dependencies":{"arg":"^5.0.2","image-size":"^1.0.2","pureimage":"^0.3.14"}}
+{"devDependencies":{"@types/node":"^18.7.8","typescript":"^4.7.4"},"dependencies":{"arg":"^5.0.2","image-size":"^1.0.2","potpack":"^1.0.2","pureimage":"^0.3.14"}}
